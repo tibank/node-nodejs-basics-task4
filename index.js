@@ -11,21 +11,47 @@ httpServer.listen(HTTP_PORT);
 const wss = new WebSocketServer({ port: WS_PORT });
 
 wss.on('connection', function connection(ws) {
+  ws.on('close', () => console.log('Socket is closed!'));
   const duplex = createWebSocketStream(ws, { encoding: 'utf8', decodeStrings: false });
 
   duplex.on('data', (chunk) => {
     console.log('received: ', chunk.toString());
     const [command, ...args] = chunk.toString().split(' ').filter(Boolean);
     const params = args.map((x) => +x);
-    commands[command](duplex, ...params);
+    try {
+      commands[command](duplex, ...params);
+      console.log(`Command ${command} was executed successfully!`);
+    } catch (error) {
+      console.log(`Command ${command} was not executed successfully! The error is ${error}`);
+    }
   });
 
   duplex.on('error', (err) => console.error(`Get error: ${err.message}`));
 });
 
-process.on('SIGINT', () => {});
+wss.on('error', (err) => {
+  console.log('Somthing is going wrong ' + err);
+});
 
-// process.on('exit', () => {
-//   wss.close();
-//   console.log(`Socket is closed!`);
-// });
+wss.on('close', (err) => {
+  console.log('Websocket server is closed!');
+});
+
+process.on('SIGINT', () => {
+  wss.clients.forEach((socket) => {
+    socket.close();
+
+    process.nextTick(() => {
+      if ([socket.OPEN, socket.CLOSING].includes(socket.readyState)) {
+        socket.terminate();
+      }
+    });
+  });
+
+  wss.close();
+  process.exit(0);
+});
+
+process.on('exit', (code) => {
+  console.log(`About to exit with code: ${code}`);
+});

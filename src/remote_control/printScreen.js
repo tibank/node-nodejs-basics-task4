@@ -12,6 +12,11 @@ export const printScreen = (duplex) => {
     if (err) {
       console.log(err);
     } else {
+      image.scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
+        if (idx % 4 === 0) {
+          [image.bitmap.data[idx], image.bitmap.data[idx + 2]] = [image.bitmap.data[idx + 2], image.bitmap.data[idx]];
+        }
+      });
       image
         .getBase64Async(Jimp.MIME_PNG)
         .then((data) => {
