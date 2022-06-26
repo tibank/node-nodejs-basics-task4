@@ -1,7 +1,8 @@
 import robot from 'robotjs';
+import { Duplex } from 'stream';
 
-const drawLine = (axis, direction, lenght) => {
-  const mouse = robot.getMousePos();
+const drawLine = (axis: string, direction: number, lenght: number) => {
+  const mouse: { [key: string]: any } = robot.getMousePos();
 
   for (let i = 0; i < lenght; i++) {
     direction > 0 ? mouse[axis]++ : mouse[axis]--;
@@ -9,7 +10,7 @@ const drawLine = (axis, direction, lenght) => {
   }
 };
 
-export const drawSquare = (duplex, x) => {
+export const drawSquare = (duplex: Duplex, x: number): void => {
   duplex.write(`draw_square ${x}\0`);
 
   drawLine('x', 1, x);
@@ -18,7 +19,7 @@ export const drawSquare = (duplex, x) => {
   drawLine('y', -1, x);
 };
 
-export const drawRectangular = (duplex, x, y) => {
+export const drawRectangular = (duplex: Duplex, x: number, y: number): void => {
   duplex.write(`draw_rectangle ${x} ${y}\0`);
 
   drawLine('x', 1, x);
@@ -27,7 +28,7 @@ export const drawRectangular = (duplex, x, y) => {
   drawLine('y', -1, y);
 };
 
-export const drawCircle = (duplex, r) => {
+export const drawCircle = (duplex: Duplex, r: number): void => {
   const LENGTH_CICLE = 2 * Math.PI;
 
   duplex.write(`draw_cicle ${r}\0`);
